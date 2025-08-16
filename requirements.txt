@@ -1,0 +1,9 @@
+streamlit
+huggingface-hub
+python-dotenv
+requests
+pdfplumber
+torch
+transformers
+numpy
+nltk

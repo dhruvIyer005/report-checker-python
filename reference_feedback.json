@@ -1,0 +1,7 @@
+{
+    "sample_report_1":{
+    "report_text": "This report explains JavaScript functions with examples but does not include enough test cases. Documentation is minimal.",
+     "reference":"The report shows excellent understanding of java script functions but lacks more test cases. Code documentation needs more detailed descriptions and comments.",
+     "key_points":["Functions","misses on test cases","insufficient documentation"]   
+    }
+}
