@@ -1,32 +1,16 @@
 from huggingface_hub import InferenceClient
 from dotenv import load_dotenv
 import os
-import json
+import json5
 import re
 
 # loading HF
 load_dotenv()
-client = InferenceClient(model="meta-llama/Meta-Llama-3-8B-Instruct", token=os.getenv("HF_TOKEN"))
+client = InferenceClient(model="openai/gpt-oss-20b", token=os.getenv("HF_TOKEN"))
 
 def grade_report(text):
-    system_prompt = """You are a computer engineering professor. Grade this report using:
-1. Technical Accuracy (25%): Correctness of implementations
-   -90-100: Flawless with advanced concepts
-   -80-89: Minor errors
-   -<80: Fundamental mistakes
-2. Clarity (25%): Organization and explanation
-   -90-100: Professional quality
-   -80-89: Needs minor improvement
-   -<80: Hard to follow 
-3. Code/Docs (25%): Quality of code comments/diagrams
-   -90-100: Excellent documentation
-   -80-89: Basic
-   -<80: Poor/no comments
-4. Originality (25%): Novelty
-   -90-100: Innovative
-   -80-89: Standard Implementation
-   -<80: Not original
-
+    system_prompt = """You are a computer engineering professor. Return STRICT JSON ONLY inside ```json ...``` fences.
+    
 Return JSON in the format:
 {
   "scores": {"technical": X, "clarity": X, "code": X, "originality": X},
@@ -34,16 +18,6 @@ Return JSON in the format:
   "feedback": {
     "strengths": ["max 3 bullets"],
     "improvements": ["max 3 priority items"]
-  }
-}
-
-Example Response:
-{
-  "scores": {"technical":88, "clarity":90, "code":80, "originality":75},
-  "overall": 82.5,
-  "feedback": {
-    "strengths": ["Clear pseudocode", "Good theoretical foundation"],
-    "improvements": ["Add runtime analysis", "Compare with alternative algorithms"]
   }
 }
 """
@@ -58,16 +32,30 @@ Example Response:
             max_tokens=400
         )
 
-        # extract the  reply
-        output_text = response.choices[0].message["content"]
+      
+        # Hugging Face clients sometimes give .output_text, sometimes .choices
+        output_text = getattr(response, "output_text", None)
+        if output_text is None and hasattr(response, "choices"):
+            msg = response.choices[0].message
+            output_text = msg["content"] if isinstance(msg, dict) else msg.content
 
-        # extract JSON 
-        match = re.search(r"\{.*\}", output_text, re.DOTALL)
+        # Try to extract JSON from code fences first
+        match = re.search(r"```json(.*?)```", output_text, re.DOTALL)
+        if not match:
+            # fallback: try to grab first {...}
+            match = re.search(r"\{.*\}", output_text, re.DOTALL)
+
         if match:
-            return json.loads(match.group(0))
+            try:
+                return json5.loads(match.group(1) if "```" in match.group(0) else match.group(0))
+            except Exception as e:
+                return {
+                    "error": f"JSON parsing failed: {str(e)}",
+                    "raw_response": output_text
+                }
         else:
             return {
-                "error": "No valid JSON found in model output",
+                "error": "No JSON found in response",
                 "raw_response": output_text
             }
 

@@ -1,0 +1,10 @@
+[
+  {
+    "id": "sample_report_1",
+    "gen": "Clear and concise explanation of JavaScript functions Examples illustrate key concepts effectively Logical organization of topics Include comprehensive test cases to demonstrate correctness and edge\u2011case handling Add inline comments and a brief documentation block for each function Provide a summary table or diagram linking concepts to real\u2011world use cases",
+    "ref": "The report shows excellent understanding of java script functions but lacks more test cases. Code documentation needs more detailed descriptions and comments.",
+    "rouge1": 0.19178082191780824,
+    "rouge2": 0.028169014084507043,
+    "rougeL": 0.1643835616438356
+  }
+]
