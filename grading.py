@@ -6,7 +6,6 @@ from huggingface_hub import InferenceClient
 
 load_dotenv()
 
-
 def get_token():
     """Return the HF token for inference."""
     token = os.getenv("HF_TOKEN")
@@ -15,15 +14,19 @@ def get_token():
     return token
 
 
-def extract_json(text):
+def extract_json(text, strict=False):
     """Extract JSON object from model output."""
     if not text:
         return {"error": "Empty response", "raw_response": ""}
 
-    # Remove markdown code fences
     text = re.sub(r"```(?:json)?\n(.*?)```", r"\1", text, flags=re.DOTALL)
 
-    # Find first JSON object
+    if strict:
+        start = text.find("{")
+        end = text.rfind("}")
+        if start != -1 and end != -1:
+            text = text[start:end + 1]
+
     match = re.search(r"\{.*\}", text, re.DOTALL)
     if match:
         try:
@@ -35,7 +38,7 @@ def extract_json(text):
 
 
 def grade_report(text, model_name="meta-llama/Meta-Llama-3-8B-Instruct"):
-    """Grade a report using HF models (LLaMA, Mistral, Gemma)."""
+    """Grade a report using HF models (LLaMA, Gemma, Phi)."""
     token = get_token()
     client = InferenceClient(model=model_name, token=token)
 
@@ -61,20 +64,32 @@ Report:
 """
 
     try:
-        # Mistral models only support text generation
-        if "mistral" in model_name.lower():
-            output_text = client.text_generation(prompt, max_new_tokens=500)
-        else:  # llama & gemma
+        if "phi" in model_name.lower():
+            # Use Phi-3.5-mini-instruct for better JSON handling
+            client = InferenceClient(model="microsoft/Phi-3.5-mini-instruct", token=token)
+            resp = client.chat_completion(
+                messages=[
+                    {"role": "system", "content": "Return ONLY valid JSON as instructed."},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.3,
+                max_tokens=500
+            )
+            output_text = resp.choices[0].message["content"]
+            parsed = extract_json(output_text, strict=True)
+
+        else:
             resp = client.chat_completion(
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.3,
                 max_tokens=500
             )
             output_text = resp.choices[0].message["content"]
+            parsed = extract_json(output_text)
 
-        parsed = extract_json(output_text)
         if "error" in parsed:
-            return {"error": "Failed to parse JSON", "raw_response": output_text}
+            return {"error": "⚠️ Failed to parse JSON from model response.", "raw_response": output_text}
+
         return parsed
 
     except Exception as e:

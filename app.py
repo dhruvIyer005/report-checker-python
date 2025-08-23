@@ -6,9 +6,9 @@ st.title("📘 GradeAI - Report Grader")
 
 # Dropdown to select LLM
 model_options = {
-    "Meta-LLaMA 3": "meta-llama/Meta-Llama-3-8B-Instruct",
-    "Gemma 2 9B Instruct": "google/gemma-2-9b-it",
-    "Mistral 7B Instruct": "mistralai/Mistral-7B-Instruct-v0.2"
+    "Meta-LLaMA 3 (8B)": "meta-llama/Meta-Llama-3-8B-Instruct",
+    "Gemma 2 (9B Instruct)": "google/gemma-2-9b-it",
+    "Phi-3.5 Mini Instruct": "microsoft/Phi-3.5-mini-instruct"
 }
 
 
