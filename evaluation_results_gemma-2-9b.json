@@ -1,0 +1,28 @@
+[
+  {
+    "id": "sample_report_1",
+    "generated_feedback": "Explains JavaScript functions. Provides examples. Identifies a weakness (lack of test cases). Expand on the technical explanation of functions. Improve clarity by providing more context and structure. Include code examples and comprehensive documentation.",
+    "reference": "The report shows excellent understanding of java script functions but lacks more test cases. Code documentation needs more detailed descriptions and comments.",
+    "raw_output": {
+      "scores": {
+        "technical": 75,
+        "clarity": 50,
+        "code": 25,
+        "originality": 25
+      },
+      "overall": 46.25,
+      "feedback": {
+        "strengths": [
+          "Explains JavaScript functions.",
+          "Provides examples.",
+          "Identifies a weakness (lack of test cases)."
+        ],
+        "improvements": [
+          "Expand on the technical explanation of functions.",
+          "Improve clarity by providing more context and structure.",
+          "Include code examples and comprehensive documentation."
+        ]
+      }
+    }
+  }
+]
